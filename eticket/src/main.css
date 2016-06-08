@@ -1,0 +1,708 @@
+@import '../../css/reset.css';
+
+body {
+  margin: 0 auto;
+  font-family: '微软雅黑', 'Microsoft YaHei', Helvetica, STHeiTi, Sans-serif;
+  line-height: 1.5;
+  font-size: .28rem;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  background: #454545;
+}
+.wrapper {
+  padding-top: 0rem;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+#MSG {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4rem;
+  padding: .1rem;
+  background: rgba(0, 0, 0, 0.8);
+  -webkit-transform: translate3d(-50%, -50%, 0);
+  -ms-transform: translate3d(-50%, -50%, 0);
+  -o-transform: translate3d(-50%, -50%, 0);
+  transform: translate3d(-50%, -50%, 0);
+  z-index: 999;
+  text-align: center;
+  color: #fff;
+  display: none;
+}
+
+/*字体颜色变化 */
+@keyframes twinkling {
+  0% {
+    color: #188933
+  }
+  10% {
+    color: #186ab6
+  }
+  20% {
+    color: #ff9c00
+  }
+  30% {
+    color: #aa4046
+  }
+  40% {
+    color: #805d80
+  }
+  50% {
+    color: #2a95a5
+  }
+  60% {
+    color: #eed237
+  }
+  70% {
+    color: #5b6792
+  }
+}
+@-moz-keyframes twinkling {
+  0% {
+    color: #188933
+  }
+  10% {
+    color: #186ab6
+  }
+  20% {
+    color: #ff9c00
+  }
+  30% {
+    color: #aa4046
+  }
+  40% {
+    color: #805d80
+  }
+  50% {
+    color: #2a95a5
+  }
+  60% {
+    color: #eed237
+  }
+  70% {
+    color: #5b6792
+  }
+}
+@-webkit-keyframes twinkling {
+  0% {
+    color: #188933
+  }
+  10% {
+    color: #186ab6
+  }
+  20% {
+    color: #ff9c00
+  }
+  30% {
+    color: #aa4046
+  }
+  40% {
+    color: #805d80
+  }
+  50% {
+    color: #2a95a5
+  }
+  60% {
+    color: #eed237
+  }
+  70% {
+    color: #5b6792
+  }
+}
+@-o-keyframes twinkling {
+  0% {
+    color: #188933
+  }
+  10% {
+    color: #186ab6
+  }
+  20% {
+    color: #ff9c00
+  }
+  30% {
+    color: #aa4046
+  }
+  40% {
+    color: #805d80
+  }
+  50% {
+    color: #2a95a5
+  }
+  60% {
+    color: #eed237
+  }
+  70% {
+    color: #5b6792
+  }
+}
+
+/*背景颜色变化*/
+@keyframes twinkling_bg {
+  0% {
+    background-color: #188933
+  }
+  10% {
+    background-color: #186ab6
+  }
+  20% {
+    background-color: #ff9c00
+  }
+  30% {
+    background-color: #aa4046
+  }
+  40% {
+    background-color: #805d80
+  }
+  50% {
+    background-color: #2a95a5
+  }
+  60% {
+    background-color: #eed237
+  }
+  70% {
+    background-color: #5b6792
+  }
+}
+@-moz-keyframes twinkling_bg {
+  0% {
+    background-color: #188933
+  }
+  10% {
+    background-color: #186ab6
+  }
+  20% {
+    background-color: #ff9c00
+  }
+  30% {
+    background-color: #aa4046
+  }
+  40% {
+    background-color: #805d80
+  }
+  50% {
+    background-color: #2a95a5
+  }
+  60% {
+    background-color: #eed237
+  }
+  70% {
+    background-color: #5b6792
+  }
+}
+@-webkit-keyframes twinkling_bg {
+  0% {
+    background-color: #188933
+  }
+  10% {
+    background-color: #186ab6
+  }
+  20% {
+    background-color: #ff9c00
+  }
+  30% {
+    background-color: #aa4046
+  }
+  40% {
+    background-color: #805d80
+  }
+  50% {
+    background-color: #2a95a5
+  }
+  60% {
+    background-color: #eed237
+  }
+  70% {
+    background-color: #5b6792
+  }
+}
+@-o-keyframes twinkling_bg {
+  0% {
+    background-color: #188933
+  }
+  10% {
+    background-color: #186ab6
+  }
+  20% {
+    background-color: #ff9c00
+  }
+  30% {
+    background-color: #aa4046
+  }
+  40% {
+    background-color: #805d80
+  }
+  50% {
+    background-color: #2a95a5
+  }
+  60% {
+    background-color: #eed237
+  }
+  70% {
+    background-color: #5b6792
+  }
+}
+
+/*新版电子票样式*/
+.wrapper, .select_wrap {
+  padding-bottom: 0;
+}
+#etiket_div {
+  display: none;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+#etiket_div .car_num_bg {
+  background: #2b2b2b;
+  height: 2.28rem;
+  box-sizing: border-box;
+  padding-top: .36rem;
+}
+#etiket_div .car_num_bg .car_num {
+  width: 4.56rem;
+  height: 1.12rem;
+  background: #ff9c00;
+  border: solid 0.04rem #fff;
+  border-radius: .12rem;
+  margin: 0 auto;
+  text-align: center;
+  line-height: 1.12rem;
+  font-size: .72rem;
+  font-weight: bold;
+  color: #fff;
+  -webkit-animation: twinkling_bg 3s infinite ease-in-out;
+  -moz-animation: twinkling_bg 3s infinite ease-in-out;
+  -o-animation: twinkling_bg 3s infinite ease-in-out;
+  animation: twinkling_bg 3s infinite ease-in-out;
+  overflow: hidden;
+  white-space: nowrap;
+}
+#etiket_div .cont {
+  width: 6.12rem;
+  background: url(./assets/eticket_icon.png)-12.8rem 0 no-repeat;
+  margin: -.42rem auto 0;
+  background-size: 27.53rem 2.28rem;
+  box-sizing: border-box;
+  padding-top: .1rem;/* overflow:hidden; */
+}
+#etiket_div .date_time {
+  width: 5.8rem;
+  margin: 0 auto;
+  background-image: -webkit-linear-gradient(top, #FFFEFE, #FFFDF9, #FFFFFE);
+  background-image: -moz-linear-gradient(top, #FFFEFE, #FFFDF9, #FFFFFE);
+  background-image: -o-linear-gradient(top, #FFFEFE, #FFFDF9, #FFFFFE);
+  border-left: solid 1px #ddd;
+  border-right: solid 1px #ddd;
+  -webkit-box-shadow: 0px -.06rem 0px #9E9D9D;
+  -moz-box-shadow: 0px -.06rem 0px #9E9D9D;
+  -o-box-shadow: 0px -.06rem 0px #9E9D9D;
+  box-shadow: 0px -.06rem 0px #9E9D9D;
+  margin-top: 0.06rem;
+  box-sizing: border-box;
+  padding: 0 .18rem .6rem;
+  position: relative;
+}
+.pl40 {
+  padding-left: .4rem;
+}
+#etiket_div .date_time .date {
+  color: #2b2b2b;
+  font-size: .65rem;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1;
+  padding: .34rem 0 .32rem;
+}
+#etiket_div .date_time .random {
+  border-top: solid 2px #ddd;
+  border-bottom: solid 2px #ddd;
+  background: url(./assets/eticket_icon.png)-19.74rem .35rem  no-repeat;
+  background-size: 27.53rem 2.28rem;
+  padding: .4rem 0 .5rem;
+  font-size: 2.0rem;
+  line-height: 2rem;
+  font-weight: bold;
+  color: #ff9c00;
+  -webkit-animation: twinkling 3s infinite ease-in-out;
+  -moz-animation: winkling 3s infinite ease-in-out;
+  -o-animation: twinkling 3s infinite ease-in-out;
+  animation: twinkling 3s infinite ease-in-out;
+  text-align: center;
+  white-space: nowrap;
+}
+#etiket_div .date_time .num {
+  position: relative;
+  z-index: 2;
+  color: #2b2b2b;
+  font-size: .46rem;
+  font-weight: bold;
+  width: 1.86rem;
+  height: .66rem;
+  line-height: .66rem;
+  text-align: center;
+  margin: -.38rem auto 0;
+  border: solid 2px #ddd;
+  background: #FFFDF9;
+  border-radius: .12rem;
+}
+#etiket_div .date_time .date_bg {
+  width: 5.78rem;
+  height: .53rem;
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  background: #eee url(./assets/eticket_icon.png)-6.4rem 0 no-repeat;
+  background-size: 27.53rem 2.28rem;
+}
+#etiket_div .date_time .mobile {
+  font-size: .24rem;
+  line-height: .24rem;
+  text-align: right;
+  padding-top: .2rem;
+}
+#etiket_div .date_time .mobile span {
+  font-size: .34rem;
+  line-height: .36rem;
+  padding-left: .1rem;
+}
+.hide {
+  display: none;
+}
+.car-icon {
+  position: absolute;
+  left: -1.93rem;
+  bottom: .1rem;
+  margin-top: 1.04rem;
+  -webkit-animation: car-exercise 6s linear infinite;
+  -moz-animation: car-exercise 6s linear infinite;
+  animation: car-exercise 6s linear infinite;
+}
+.car-bg {
+  position: relative;
+  height: 1.74rem;
+  margin-top: .1rem;
+  padding-bottom: .3rem;
+  background: url(./assets/eticket_icon.png) 0 0 no-repeat;
+  background-size: 27.53rem 2.28rem;
+  overflow: hidden;
+  left: 50%;
+  max-width: 6.4rem;
+  -webkit-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  -o-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+#etiket_div .date_time .random.len2, #etiket_div .date_time .random.len3 {
+  font-size: 1.8rem;
+}
+#etiket_div .date_time .random.len4 {
+  font-size: 1.3rem;
+}
+#code {
+  margin-top: .14rem;
+  font-size: .24rem;
+  line-height: .24rem;
+  text-align: right;
+}
+#code span {
+  padding-left: .1rem;
+  font-size: .36rem;
+  line-height: .36rem;
+  font-weight: bold;
+}
+
+/* 小车运动 */
+@keyframes car-exercise {
+  from {
+    -webkit-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    -webkit-transform: translate3d(8.37rem, 0, 0);
+    -ms-transform: translate3d(8.37rem, 0, 0);
+    -o-transform: translate3d(8.37rem, 0, 0);
+    transform: translate3d(8.37rem, 0, 0);
+  }
+}
+@-webkit-keyframes car-exercise {
+  from {
+    -webkit-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    -webkit-transform: translate3d(8.37rem, 0, 0);
+    -ms-transform: translate3d(8.37rem, 0, 0);
+    -o-transform: translate3d(8.37rem, 0, 0);
+    transform: translate3d(8.37rem, 0, 0);
+  }
+}
+@-moz-keyframes car-exercise {
+  from {
+    -webkit-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    -webkit-transform: translate3d(8.37rem, 0, 0);
+    -ms-transform: translate3d(8.37rem, 0, 0);
+    -o-transform: translate3d(8.37rem, 0, 0);
+    transform: translate3d(8.37rem, 0, 0);
+  }
+}
+@-o-keyframes car-exercise {
+  from {
+    -webkit-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    -webkit-transform: translate3d(8.37rem, 0, 0);
+    -ms-transform: translate3d(8.37rem, 0, 0);
+    -o-transform: translate3d(8.37rem, 0, 0);
+    transform: translate3d(8.37rem, 0, 0);
+  }
+}
+
+/* max-height: 416px  */
+@media (max-height:480px) {
+  .car-bg {
+    top: -.8rem;
+    margin-bottom: -.8rem;
+  }
+}
+body {
+  overflow: visible;
+}
+#etiket_div #driver_type .m_num {
+  font-size: .24rem;
+}
+.active-btn {
+  position: absolute;
+  bottom: .2rem;
+  width: 1.5rem;
+  padding: .4rem .3rem .4rem 0;
+  display: none;
+}
+.car-icon img {
+  width: 1.93rem;
+  height: 1.13rem;
+  display: none;
+}
+
+/*新版电子票样式*/
+.wrapper, .select_wrap {
+  padding-bottom: 0;
+}
+.hide {
+  display: none;
+}
+.car-icon {
+  position: absolute;
+  left: -1.93rem;
+  bottom: .1rem;
+  margin-top: 1.04rem;
+  -webkit-animation: car-exercise 6s linear infinite;
+  -moz-animation: car-exercise 6s linear infinite;
+  animation: car-exercise 6s linear infinite;
+}
+.car-bg {
+  position: relative;
+  height: 1.74rem;
+  margin-top: .1rem;
+  padding-bottom: .3rem;
+  background: url(./assets/eticket_icon.png) 0 0 no-repeat;
+  background-size: 27.53rem 2.28rem;
+  overflow: hidden;
+  left: 50%;
+  max-width: 6.4rem;
+  -webkit-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  -o-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+#code {
+  margin-top: .14rem;
+  font-size: .24rem;
+  line-height: .24rem;
+  text-align: right;
+}
+#code span {
+  padding-left: .1rem;
+  font-size: .36rem;
+  line-height: .36rem;
+  font-weight: bold;
+}
+
+/* 小车运动 */
+@keyframes car-exercise {
+  from {
+    -webkit-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    -webkit-transform: translate3d(8.37rem, 0, 0);
+    -ms-transform: translate3d(8.37rem, 0, 0);
+    -o-transform: translate3d(8.37rem, 0, 0);
+    transform: translate3d(8.37rem, 0, 0);
+  }
+}
+@-webkit-keyframes car-exercise {
+  from {
+    -webkit-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    -webkit-transform: translate3d(8.37rem, 0, 0);
+    -ms-transform: translate3d(8.37rem, 0, 0);
+    -o-transform: translate3d(8.37rem, 0, 0);
+    transform: translate3d(8.37rem, 0, 0);
+  }
+}
+@-moz-keyframes car-exercise {
+  from {
+    -webkit-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    -webkit-transform: translate3d(8.37rem, 0, 0);
+    -ms-transform: translate3d(8.37rem, 0, 0);
+    -o-transform: translate3d(8.37rem, 0, 0);
+    transform: translate3d(8.37rem, 0, 0);
+  }
+}
+@-o-keyframes car-exercise {
+  from {
+    -webkit-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    -o-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    -webkit-transform: translate3d(8.37rem, 0, 0);
+    -ms-transform: translate3d(8.37rem, 0, 0);
+    -o-transform: translate3d(8.37rem, 0, 0);
+    transform: translate3d(8.37rem, 0, 0);
+  }
+}
+
+/* max-height: 416px  */
+@media (max-height:480px) {
+  .car-bg {
+    top: -.8rem;
+    margin-bottom: -.8rem;
+  }
+}
+body {
+  overflow: visible;
+}
+
+/* 中港通 */
+.wrapper-2 .mobile-title {
+  display: inline-block;    /* padding-left: .16rem;
+      width: 1.66rem; */
+  font-size: .22rem;
+}
+.wrapper-2 .mobile-con {
+  display: inline-block;
+  font-size: .22rem;    /* line-height: .56rem; */
+}
+.wrapper-2 .help {
+  font-family: inherit;
+  margin-top: .62rem;
+  margin-left: 50%;
+  width: 3.8rem;
+  height: 1rem;
+  background: #ff9c00;
+  font-size: .38rem;
+  font-weight: bold;
+  color: #fff;
+  border-radius: .2rem;
+  -webkit-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  -o-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+#etiket_div .random {
+  position: relative;
+}
+#etiket_div.wrapper-2 .date_time .random {
+  padding: .4rem 0 .5rem;
+  font-size: .34rem;
+  line-height: .6rem;
+  font-weight: normal;
+  color: #ff9c00;
+  text-align: center;
+  white-space: nowrap;
+  -webkit-animation: none;
+  -moz-animation: none;
+  -o-animation: none;
+  animation: none;
+}
+.wrapper-2 a.tel_color {
+  color: #F7931E;    /*color: #3f2e27;*/
+  font-weight: normal;
+}
+#etiket_div.wrapper-2 .date_time .mobile {
+  line-height: 1.5;
+  font-size: 0.28rem;
+  text-align: left;
+  padding-top: .5rem;
+}
+.wrapper-2 {
+  font-family: '微软雅黑';
+  margin: 0 auto;
+  color: #3f2e27;
+  overflow-x: hidden;
+  z-index: 4;
+}
+.server_mobile {
+  padding-left: 0.1rem;
+}
+#etiket_div .car_num_bg .marquee-start {
+  width: 5.8rem;
+  font-size: .6rem;
+}
+.canvas-wrap {
+  position: relative;
+  display: inline-block;
+  width: 2.84rem;
+  height: 0.24rem;
+  line-height: 0.24rem;
+}
+canvas {
+  width: 100%;
+  height: 0.4rem;    /* height:0.24rem; */
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;    /* border:1px solid #d3d3d3; */
+}
+
+/*电子票下发包 版本号*/
+.package_version {
+  position: absolute;
+  line-height: normal;
+  width: 100%;
+  bottom: 0.1rem;
+  display: block;
+  text-align: center;
+  font-size: 0.20rem;
+  color: rgb(238, 238, 238);
+}
+#etiket_div.wrapper .package_version {
+  bottom: .3rem;
+}

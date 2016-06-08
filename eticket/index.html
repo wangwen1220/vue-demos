@@ -1,0 +1,498 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>嗒嗒巴士电子票</title>
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+  <script>!function(a,b){function h(){var a=d.getBoundingClientRect().width,c=100*a/g;c=c>80?80:50>c?50:c,b.rem=c,d.style.fontSize=c+"px",i()}function i(){var b,c,a=document.createElement("div");d.appendChild(a),a.style.width="1rem",b=parseInt(d.style.fontSize),c=a.clientWidth/b,c&&1!==c&&(d.style.fontSize=b/c+"px"),setTimeout(function(){d.removeChild(a)},300)}var e,c=a.document,d=c.documentElement,f=c.querySelector("#wjs-setrem")||d,g=f.getAttribute("data-design-width")||640;a.addEventListener("pageshow",function(a){a.persisted&&(clearTimeout(e),e=setTimeout(h,300))},!1),a.addEventListener("resize",function(){clearTimeout(e),e=setTimeout(h,300)},!1),a.addEventListener("DOMContentLoaded",function(){c.body.clientWidth!==d.getBoundingClientRect().width&&i()},!1),h()}(window,window.wjs||(window.wjs={}));</script>
+</head>
+
+<body>
+  <app></app>
+  <script src="static/libs.js?v=2.6.0"></script>
+  <script src="static/app.js?v=2.6.0"></script>
+
+  <script>
+    // 电子票下发包版本, 记录在gg的access日志中, 用于通过手机号定位问题
+    var g_ticket_pack_version = '1.7.03';
+
+    var timerMSG = null;
+    function fnMSG(str) {
+      if ($('#MSG').css('display') == 'none') {
+        $('#MSG').text(str).show();
+        clearTimeout(timerMSG);
+        timerMSG = setTimeout(function() {
+          $('#MSG').hide();
+        }, 2000);
+      } else {
+        setTimeout(function() {
+          fnMSG(str);
+        }, 1000);
+      }
+    }
+
+  try{
+    // 跑马灯函数
+    var marqueeLine = function(type) {
+      var ele = $('.' + type);
+      ele.removeClass('m-marquee');
+      var html = ele.html();
+      ele.html("<span>" + html + "</span>");
+      var curr_w = ele.width() - parseFloat(ele.css('padding-left'));
+      var real_w = ele.find('span').width();
+      if (real_w > curr_w) {
+        ele.html("<p><label><span>" + html + "</span><span>" + html + "</span></label></p>");
+        ele.addClass("m-marquee");
+        var pd_right = parseFloat(ele.find('span').css('padding-right'));
+        ele.find('label').width(2 * (real_w + pd_right));
+      } else {
+        ele.html(html);
+      }
+    };
+
+    if( !(ddb.isApp && $.os.android) ){
+      $.each(  $( '.tel_href' ), function(i, v){
+        $(v).attr( 'href',$(v).attr( 'tel-href' ) );
+      });
+    }
+
+    //获取api返回的电子票版本, 如果不相等, 取线上最新版本
+    var update_eticket_package = function(){
+          if(ddb.pgps("has_load_ticket_online")){
+            return;
+          }
+
+          // var is_css_test = B.url.getParam("css_test");
+          // if(+is_css_test != 1){
+          //   return ;
+          // }
+
+          if(!ddb.isApp){
+              return;
+          }
+
+          ddb.getJsonp("app/get_common_data"
+            , {}
+            , function(d) {
+              if (+d.ret === 0) {
+                var ticket_url = d.data.ticket_url;
+                var pattern = /.?page\/eticket(\d{1,2}\.\d{1,2}\.\d{1,2})\.zip\.?/;
+                var version = pattern.exec(ticket_url);
+                //oAlert(JSON.stringify(version));
+                if (version && version.length == 2) {
+                  if (g_ticket_pack_version != version[1]) { //版本号不相等, 取线上最新版本
+                    var url = B.url.setObj('http://' + ddb.sld + 'wechat.buskeji.com/webapp/eticket/index.html', B.url.getObj(location.href));
+                    // history.replaceState(null, '',url);
+                    // location.href = url;
+                    //oAlert(url);
+                    location.replace(url);
+                    ddb.pgps("has_load_ticket_online", 1);
+                  }
+                }
+              } //end  if d.ret
+            }
+            , function(e) {
+              //oAlert(JSON.stringify(e));
+            });
+     };
+
+    var app_main_run = function(obj){
+        $(".package_version").text(g_ticket_pack_version);
+
+        //var version = B.url.getParam("ticket_version") || obj.eticket.ticket_version;
+        var eticket = obj.eticket;
+        //eticket.platform_id=2;
+        //中港通, 跳转到在线的页面
+        if(eticket.platform_id){
+            if(+eticket.platform_id === 2) {  //中港通
+                g_app2.show(obj);
+            } else {
+                g_app1.show(obj);
+            }
+        }else{
+            g_app1.show(obj);
+        }
+        ddb.isApp && update_eticket_package();
+    }
+
+
+
+    window.up_ticket = function(str) {
+      //数据存入本地
+      var obj = JSON.parse(str);
+      ddb.pgps("ddb_eticket_cache",obj);
+      app_main_run(obj);
+    };
+
+    var g_app1 = (function() {
+        var g_timer = 1; //定时器
+        //生成电子票显示token值, 生成验票码算法
+        function made_token(ticket_key, start_date, line_start_time,ticket_names) {
+            //给定任意字符串, 产生唯一的4位整数
+            var made_hash = function(str) {
+                var sdbmCode = function(str) {
+                    var hash = 0;
+                    for (var i = 0, len = str.length; i < len; ++i) {
+                        char = str.charCodeAt(i);
+                        hash = char + (hash << 6) + (hash << 16) - hash;
+                    }
+                    return hash;
+                };
+                var md5 = faultylabs.MD5(str);
+                //var hash = (Math.abs(sdbmCode(md5)) / 10000).toFixed(4).split(".")[1];
+                var names_len = ticket_names.length;
+                var index = (Math.abs(sdbmCode(md5)) % names_len);
+                if (index >
+                    1 && index >= names_len) {
+                    index -= 1;
+                }
+                return ticket_names[index];
+                //return hash;
+            }
+            if (typeof ticket_key != "string" || !ticket_key) {
+                fnMSG('数据格式错误；ticket_key');
+            }
+            if (typeof start_date != "string" || !start_date) {
+                fnMSG('数据格式错误；start_date');
+            }
+            if (typeof line_start_time != "string" || !line_start_time) {
+                fnMSG('数据格式错误；line_start_time');
+            }
+            var ticket_token = "";
+            var now = new Date().getTime();
+            if (typeof start_date == "string" || start_date) {
+                var ticket_time_str = start_date.replace(/-/g, "/") + " " + line_start_time;
+                var ticket_time = new Date(ticket_time_str);
+            } else {
+                fnMSG('数据格式错误；start_date');
+            }
+            //1分钟变换一次
+            var const_min = 1;
+            //var const_min  = 10;
+            //检查生成的ticket_time是否为NaN
+            if (ticket_time.getFullYear() > 0) {
+                var before10_min = ticket_time.getTime() - 10 * 60 * 1000;
+                var min_token = '';
+                if (now > before10_min) {
+                    //min_token = Math.round((ticket_time.getTime() /1000/60/const_min));
+                    min_token = start_date + line_start_time;
+                    if (g_timer) {
+                        window.clearInterval(g_timer);
+                    }
+                } else {
+                    //每过1分钟变化一次
+                    min_token = Math.round((now / 1000 / 60 / const_min));
+                }
+                ticket_token = made_hash(ticket_key + min_token);
+            } else {
+                if (g_timer) {
+                    window.clearInterval(g_timer);
+                }
+                fnMSG('数据格式错误；ticket_time');
+            }
+            return ticket_token;
+        }
+        var e_show = function(obj) {
+            var item = obj.eticket;
+            var common = obj.common;
+            var defaultMove = true;
+            var isDriver = false;
+            if (common && +common.login_type === 2) {
+                isDriver = true;
+            };
+            var ggHost = "http://dev.gg.buskeji.com";
+            if ('release' == ddb.dev_status) {
+                ggHost = "http://gg.buskeji.com";
+            }
+            //广告统计url中的随机值, 每过6个小时更新一次
+            /*var get_CacheTime = function() {
+                    var tm = new Date();
+                    var cach_time = Math.round(tm.getTime() / 1000 / 3600 / 1);
+                    return "0." + cach_time;
+            }*/
+                //跳转到广告统计地址中转, 以便统计
+            var click_statistics = function(ad_item) {
+                var url = ggHost + "/ad_statistic/click?"
+                var toUrl = B.url.setObj(url, ddb.get_common());
+                //1个小时内不重复统计, 使用本地缓存.
+                //ad_item.cache_time = get_CacheTime();
+                toUrl = B.url.setObj(toUrl, ad_item);
+                location.href = toUrl;
+            }
+            var show_statistics = function(ad_item) {
+                try {
+                    var _img = new Image();
+                    _img.onload = function() {
+                        var pd = {
+                            urlType: "app",
+                            ad_id: ad_item.ad_id,
+                            target_url: ad_item.target_url,
+                            image_url: ad_item.image_url,
+                            ticket_pack_ver:g_ticket_pack_version
+                            /*,ad_desc: ad_item.ad_desc*/
+                        };
+                        //1个小时内不重复统计, 使用本地缓存.
+                        //pd.cache_time = get_CacheTime();
+                        ddb.getJsonp(ggHost + "/ad_statistic/show", pd, function(d) {
+                            //console.log(d)
+                        });
+                    };
+                    var fixHttp = function(url) {
+                        if (url.indexOf("http") >= 0) {
+                            return url;
+                        } else {
+                            return "http://" + url;
+                        }
+                    }
+                    _img.src = fixHttp(ad_item.image_url);
+                } catch (e) {}
+            };
+
+            if (item.ticket_ad) {
+                var ad = item.ticket_ad;
+                if (ad.mid_bg && ad.mid_bg.image_url) {
+                    show_statistics(ad.mid_bg);
+                    $('#etiket_div .date_time .random').css({
+                        "background": "url(" + ad.mid_bg.image_url + ")",
+                        "background-size": "cover"
+                    });
+                    if (!isDriver && ad.mid_bg.target_url) {
+                        $('#etiket_div .date_time .random').on('click', function() {
+                            click_statistics(ad.mid_bg);
+                        });
+                    }
+                }
+                if (ad.left_button && ad.left_button.image_url) {
+                    show_statistics(ad.left_button);
+                    $('.active-btn').attr('src', ad.left_button.image_url).show();
+                    if (!isDriver && ad.left_button.target_url) {
+                        $('.active-btn').on('click', function() {
+                            click_statistics(ad.left_button);
+                        });
+                    }
+                }
+                if (ad.bottom_animate && ad.bottom_animate.image_url) {
+                    show_statistics(ad.bottom_animate);
+                    $('.active-move').attr('src', ad.bottom_animate.image_url).show();
+                    defaultMove = false;
+                    if (!isDriver && ad.bottom_animate.target_url) {
+                        $('.car-bg').on('click', function() {
+                            click_statistics(ad.bottom_animate);
+                        });
+                    }
+                }
+            }
+            if (defaultMove) {
+                $('.active-move').attr('src', "./image/icon_car.png").show();
+            }
+            if (item) {
+                 if(+item.main_line_type >= 2 ){   //非上下班, 车牌号处显示上下车点
+                    $("#etiket_div.wrapper .car_num").addClass('marquee-start').text(item.on_site_name+'-'+item.off_site_name);
+                    // 文案过长时跑马灯
+                    setTimeout(function() {
+                      marqueeLine('marquee-start');
+                    }, 100);
+                 }else{
+                    $("#etiket_div.wrapper .car_num").text(item.line_card || item.car_number);
+                 }
+
+                if (typeof item.start_date == "string" || item.start_date) {
+                    var date = new Date(item.start_date.replace(/-/g, '/'));
+                } else {
+                    fnMSG('数据格式错误；start_date');
+                }
+                if (date) {
+                    $("#etiket_div .date_time .date_d").text((date.getMonth() + 1) + "月" + date.getDate() + "日");
+                }
+                $("#etiket_div .date_time .time_d").text(item.start_time.slice(0, -3));
+                if (item.ticket_number > 1) {
+                    $("#etiket_div .date_time .num").show().find("span").text(item.ticket_number + "张");
+                }
+
+                if (!isDriver && item.ticket_identifier) {
+                    $("#etiket_div #code span").text(item.ticket_identifier);
+                }
+                $("body").css("background", "#eee");
+                /*$("#eticket_section").hide();*/
+                $("#etiket_div.wrapper").show();
+                if (isDriver) {
+                    $("#pass_type").hide();
+                    $("#driver_type").show();
+                    $("#num").hide();
+                } else {
+                    $("#pass_type").show();
+                    $("#driver_type").hide();
+                    var mobile = common.mobile;
+                    if (typeof mobile == "string") {
+                        $("#pass_type span").text(mobile.substring(0, 3) + "-" + mobile.substring(3, 7) + "-" + mobile.substring(7));
+                    } else {
+                        fnMSG('数据格式错误；mobile');
+                    }
+                }
+                var refresh_token = function() {
+                    var ticket_names = g_ticket_names_v3;
+                    var token = made_token(item.ticket_key, item.start_date, item.line_start_time,ticket_names);
+                    //token = '鸡腿鸡';
+                    switch (token.length) {
+                        case 2:
+                            $("#etiket_div .random").attr('class', 'random len2');
+                            break;
+                        case 3:
+                            $("#etiket_div .random").attr('class', 'random len3');
+                            break;
+                        case 4:
+                            $("#etiket_div .random").attr('class', 'random len4');
+                            break;
+                        default:
+                            $("#etiket_div .random").attr('class', 'random len4');
+                            break;
+                    }
+                    $("#etiket_div .random span").text(token);
+                };
+                refresh_token();
+                //每分钟刷新token值, 直到上车前10分钟
+                g_timer = window.setInterval(refresh_token, 1000);
+            }
+
+            window.setTimeout(function(){
+              init('canvas');
+            },300);
+        };
+
+        return  {
+          show:e_show
+        }
+
+        //从本地读取数据, 显示电子票
+        //var obj = ddb.pgps("ddb_eticket_cache");
+        //show(obj);
+    })();
+
+    //中港通
+    var g_app2 = (function(){
+      var e_show = function(obj) {
+        if(obj ){
+          if(obj.common){
+            var mobile = obj.common.mobile || ddb.cookie("wx_mobile") || '';
+            $("#user_mobile").text(mobile);
+            //$("#user_mobile").attr("href","tel:"+mobile);
+          }
+
+          var item = obj.eticket;
+          if(item){
+            if (typeof item.start_date == "string" || item.start_date) {
+                var date = new Date(item.start_date.replace(/-/g, '/'));
+            } else {
+                fnMSG('数据格式错误；start_date');
+            }
+            if (date) {
+                $("#etiket_div .date_time .date_d").text((date.getMonth() + 1) + "月" + date.getDate() + "日");
+            }
+            $("#etiket_div .date_time .time_d").text(item.start_time.slice(0, -3));
+            $("#etiket_div.wrapper-2 .car_num").addClass('marquee-start').text(item.on_site_name+'-'+item.off_site_name);
+            // 文案过长时跑马灯
+            setTimeout(function() {
+              marqueeLine('marquee-start');
+            }, 100);
+          }
+        }
+
+        $('.help').on('click', function() {
+            location.href = "http://jump.buskeji.com/common/load?page=zgt_travel_guide";
+        });
+        $("body").css("background", "#eee");
+        $("#etiket_div.wrapper-2").show();
+        $("#etiket_div.wrapper").hide();
+      };
+      return  {
+        show:e_show
+      }
+    })();
+
+     //电子票css样式调试,  在url中传入css_test = 1 来实现
+    var is_css_test = B.url.getParam("css_test");
+    if(+is_css_test === 1){
+     var s = '{"eticket":{"platform_id":1 ,"main_line_type":3, "ticket_code":"1511231034188240-20151123-1","start_date":"2015-11-23","start_time":"17:30:00","line_start_time":"17:30:00","on_site_name":"\u5357\u5c71\u90ae\u5c40","on_site_lng":"113.92009077867","on_site_lat":"22.506864105589","off_site_name":"\u6cf0\u90a6\u79d1\u6280\u5927\u53a6","off_site_lng":"113.952397","off_site_lat":"22.536342","tog_line_id":"344","line_code":"344-82-90","is_checked":"0","ticket_color":"#d3b17d","car_number":"1234\u662f","line_card":"A123","order_number":"1511231034188240","ticket_number":2,"ticket_version":2,"ticket_identifier":"2312","ticket_key":"3790c2e0170cb569ed72fd49d89dc616","ticket_ad":{"mid_bg":{"ad_id":"129","ad_desc":"\u80cc\u666f\u63cf\u8ff0","image_url":"","target_url":"http:\/\/www.buskeji.com"},"left_button":{"ad_id":"128","ad_desc":"\u6309\u94ae\u63cf\u8ff0","image_url":"http:\/\/test.public.ds.dadabus.com\/ad_res\/20151123103924_colin.jpg","target_url":"http:\/\/www.baidu.com"},"bottom_animate":{"ad_id":"130","ad_desc":"\u8dd1\u52a8\u5c0f\u8f66\u63cf\u8ff0","image_url":"http:\/\/test.public.ds.dadabus.com\/ad_res\/20151123120159_colin.jpg","target_url":"http:\/\/sina.com.cn"}}},"common":{"login_type":1,"mobile":"18945678901"}}';
+      up_ticket(s);
+    }
+
+
+    // H5 端获取电子票数据
+    (function() {
+      if(+is_css_test === 1){
+          return ;
+      }
+
+      var ddbCommon = ddb.pgps('common') || ddb.store('common') || {"login_type":1,"mobile":ddb.cookie("wx_mobile")};
+
+      // 如果设备类型不是 web 则退出
+      if(B.url.getParam('source') != 'webapp'){
+          return ;
+      }
+
+      var eticket = (ddb.pgps('simple_Itinerary_pgps') || {}).ticket || {};
+      var startData = B.url.getParam('start_date');
+      var togLineId = B.url.getParam('tog_line_id');
+      var ticketObj = {
+        eticket: eticket,
+        common: ddbCommon
+      };
+      $.extend(true, ticketObj.common, ddbCommon);
+
+      // 快捷扫码购票
+      if (ddbCommon.source === 4) {
+        eticket = ddb.cookie('quick_pay_ticket');
+        if (!eticket) {
+          fnMSG('电子票已过期或无效');
+          return;
+        }
+        eticket = JSON.parse(eticket);
+        eticket.car_number = eticket.car_number || '暂无';
+        up_ticket(JSON.stringify(ticketObj));
+        return;
+      }
+
+      // 如果缓存数据有效先显示缓存的数据
+      if (eticket.ticket_key) {
+        eticket.car_number = eticket.car_number || '暂无';
+        up_ticket(JSON.stringify(ticketObj));
+      }
+
+      // 获取当前电子票
+      ddb.loading.show();
+      ddb.get('member/get_current_tickets', {page_size: 10, page_index: 1}, function(d) {
+        ddb.loading.hide();
+        if (+d.ret !== 0) {
+          fnMSG(d.msg);
+
+          if ((+d.ret === 8001 || +d.ret === 8002 || +d.ret === 8003)) {
+            // 用户未登陆，跳转到登陆页面
+            var url = 'http://' + location.host + '/webapp/login.html';
+            location.href = B.url.setParam('referrer', location.href, url);
+          }
+          return;
+        }
+
+        var list = d.data.ticket_list;
+        togLineId = togLineId || eticket.tog_line_id;
+        for (var i = 0, l = list.length; i < l; ++i) {
+          if (togLineId == list[i].tog_line_id) {
+            ticketObj.eticket = $.extend(eticket, list[i]);
+            eticket.car_number = eticket.car_number || '暂无';
+            up_ticket(JSON.stringify(ticketObj));
+            break;
+          }
+        }
+      });
+    })();
+
+  }catch(e){
+     //console.log(e);
+     fnMSG(e);
+  }
+  </script>
+</body>
+</html>

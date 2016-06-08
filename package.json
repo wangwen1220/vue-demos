@@ -1,0 +1,24 @@
+{
+  "name": "vue-demos",
+  "version": "1.0.0",
+  "description": "vue and webpack demos",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/wangwen1220/vue-demos.git"
+  },
+  "keywords": [
+    "vue",
+    "webpack",
+    "demo"
+  ],
+  "author": "Steven",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wangwen1220/vue-demos/issues"
+  },
+  "homepage": "https://github.com/wangwen1220/vue-demos#readme"
+}
